@@ -24,13 +24,11 @@
     h2 { font-size: 16px; color: #00A8E8; font-weight: 400; margin: 0 0 8px 0; }
     .subtitle { color: rgba(255, 255, 255, 0.5); font-size: 14px; margin-bottom: 32px; }
     
-    /* 🌟 NEW: Wrapper to hold the input and the eye icon together */
     .input-group { 
       margin-bottom: 16px; 
       position: relative; 
     }
     
-    /* 🌟 UPDATED: Added padding to the right so text doesn't hide behind the icon */
     input { 
       width: 100%; 
       padding: 16px 50px 16px 16px; 
@@ -45,12 +43,10 @@
     }
     input:focus { background-color: rgba(255, 255, 255, 0.1); border: 1px solid #00A8E8; }
     
-    /* The Main Submit Button */
     .main-btn { width: 100%; padding: 16px; margin-top: 16px; background-color: #00A8E8; color: #ffffff; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; }
     .main-btn:hover { background-color: #0090C8; transform: translateY(-2px); }
     .main-btn:disabled { background-color: #333333; color: #888888; cursor: not-allowed; }
     
-    /* 🌟 NEW: The Eye Icon Button Styling */
     .toggle-password {
       position: absolute;
       right: 16px;
@@ -60,11 +56,12 @@
       border: none;
       color: rgba(255, 255, 255, 0.5);
       cursor: pointer;
-      padding: 0;
+      padding: 10px; /* 🌟 Added padding to make the touch target larger for fingers */
       display: flex;
       align-items: center;
       justify-content: center;
       transition: color 0.3s ease;
+      -webkit-tap-highlight-color: transparent; /* Removes blue flash on mobile tap */
     }
     .toggle-password:hover {
       color: #ffffff;
@@ -73,6 +70,7 @@
       width: 20px;
       height: 20px;
       fill: currentColor;
+      pointer-events: none; /* 🌟 THE FIX: Stops the SVG from blocking the button click */
     }
 
     .message { margin-top: 24px; padding: 12px; border-radius: 8px; font-size: 14px; }
@@ -126,21 +124,20 @@
     const submitBtn = document.getElementById('submit-btn');
     const statusMessage = document.getElementById('status-message');
 
-    // SVGs for the Eye icons
     const svgEyeOpen = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
     const svgEyeClosed = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
 
-    // 🌟 NEW: JavaScript function to toggle password visibility
+    // 🌟 THE FIX: Using setAttribute makes it forcefully update the UI on all mobile browsers
     function toggleVisibility(inputId, iconId) {
       const inputField = document.getElementById(inputId);
       const icon = document.getElementById(iconId);
       
-      if (inputField.type === "password") {
-        inputField.type = "text";
-        icon.innerHTML = svgEyeOpen; // Switch to Open Eye
+      if (inputField.getAttribute("type") === "password") {
+        inputField.setAttribute("type", "text");
+        icon.innerHTML = svgEyeOpen; 
       } else {
-        inputField.type = "password";
-        icon.innerHTML = svgEyeClosed; // Switch to Closed Eye
+        inputField.setAttribute("type", "password");
+        icon.innerHTML = svgEyeClosed; 
       }
     }
 
@@ -185,6 +182,10 @@
         showMessage("Password updated successfully! You can now log into the Betta Cam app.", false);
         newPasswordInput.value = '';
         confirmPasswordInput.value = '';
+        
+        // Hide the inputs so it looks cleaner after success
+        document.getElementById('new-password').parentElement.style.display = 'none';
+        document.getElementById('confirm-password').parentElement.style.display = 'none';
         submitBtn.style.display = 'none';
 
       } catch (error) {
