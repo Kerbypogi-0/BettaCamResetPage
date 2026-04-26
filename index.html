@@ -33,7 +33,7 @@
     
     input { 
       width: 100%; 
-      padding: 16px 70px 16px 16px; /* Extra right padding so text doesn't hit the SHOW button */
+      padding: 16px 70px 16px 16px; 
       background-color: rgba(255, 255, 255, 0.05); 
       border: none; 
       border-radius: 12px; 
@@ -45,7 +45,7 @@
     }
     input:focus { border: 1px solid #00A8E8; }
     
-    /* Premium Text-Based Toggle Button (Fail-proof on Mobile) */
+    /* Premium Text-Based Toggle Button */
     .toggle-btn {
       position: absolute;
       right: 8px;
@@ -57,6 +57,7 @@
       padding: 10px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+      z-index: 10;
     }
 
     .main-btn { width: 100%; padding: 16px; margin-top: 16px; background-color: #00A8E8; color: #ffffff; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
@@ -65,6 +66,8 @@
     .message { margin-top: 24px; padding: 12px; border-radius: 8px; font-size: 14px; display: none; }
     .message.success { background-color: rgba(46, 213, 115, 0.1); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.3); display: block; }
     .message.error { background-color: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); display: block; }
+    
+    .version-tag { color: #333333; font-size: 10px; margin-top: 20px; text-align: center; }
   </style>
 </head>
 <body>
@@ -78,18 +81,20 @@
       <form id="password-form">
         <div class="input-group">
           <input type="password" id="pass1" placeholder="New Password" required minlength="6">
-          <button type="button" class="toggle-btn" onclick="toggleVisibility('pass1', this)">SHOW</button>
+          <button type="button" class="toggle-btn" id="toggle-btn-1">SHOW</button>
         </div>
 
         <div class="input-group">
           <input type="password" id="pass2" placeholder="Confirm Password" required minlength="6">
-          <button type="button" class="toggle-btn" onclick="toggleVisibility('pass2', this)">SHOW</button>
+          <button type="button" class="toggle-btn" id="toggle-btn-2">SHOW</button>
         </div>
         
         <button type="submit" id="submit-btn" class="main-btn">Save New Password</button>
       </form>
 
       <div id="status-box" class="message"></div>
+      
+      <div class="version-tag">Version 3.0</div>
     </div>
   </div>
 
@@ -99,17 +104,32 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dXp5a2ltZHRob2xlZXh0ZmR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0ODI5ODIsImV4cCI6MjA5MjA1ODk4Mn0.fIg05zP6I5hIxFFCEJu-ztOhVTHVNnBHhlBJo3AV6Q4';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 2. Hide/Reveal Logic
-    function toggleVisibility(inputId, btn) {
-      const input = document.getElementById(inputId);
-      if (input.type === "password") {
-        input.type = "text";
-        btn.textContent = "HIDE";
+    // 2. Strict DOM Event Listeners for SHOW/HIDE
+    const btn1 = document.getElementById('toggle-btn-1');
+    const input1 = document.getElementById('pass1');
+    
+    btn1.addEventListener('click', function() {
+      if (input1.type === 'password') {
+        input1.type = 'text';
+        btn1.textContent = 'HIDE';
       } else {
-        input.type = "password";
-        btn.textContent = "SHOW";
+        input1.type = 'password';
+        btn1.textContent = 'SHOW';
       }
-    }
+    });
+
+    const btn2 = document.getElementById('toggle-btn-2');
+    const input2 = document.getElementById('pass2');
+    
+    btn2.addEventListener('click', function() {
+      if (input2.type === 'password') {
+        input2.type = 'text';
+        btn2.textContent = 'HIDE';
+      } else {
+        input2.type = 'password';
+        btn2.textContent = 'SHOW';
+      }
+    });
 
     // 3. UI Messaging
     const statusBox = document.getElementById('status-box');
@@ -124,10 +144,10 @@
     document.getElementById('password-form').addEventListener('submit', async function(event) {
       event.preventDefault(); // Stop page from refreshing!
 
-      const pass1 = document.getElementById('pass1').value;
-      const pass2 = document.getElementById('pass2').value;
+      const p1 = input1.value;
+      const p2 = input2.value;
 
-      if (pass1 !== pass2) {
+      if (p1 !== p2) {
         showFeedback("Passwords do not match.", true);
         return;
       }
@@ -136,22 +156,17 @@
       submitBtn.textContent = "Updating...";
 
       try {
-        // Attempt to update the database
         const { data, error } = await supabase.auth.updateUser({
-          password: pass1
+          password: p1
         });
 
-        // If Supabase throws an error (like missing token), catch it here
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
-        // Success State
         showFeedback("Success! Password updated. You can now log into the app.", false);
-        document.getElementById('password-form').style.display = 'none'; // Hide the form inputs
+        document.getElementById('password-form').style.display = 'none';
 
       } catch (error) {
-        console.error(error); // Logs to browser console for debugging
+        console.error(error); 
         showFeedback(error.message || "Session expired. Please request a new link from the app.", true);
         submitBtn.disabled = false;
         submitBtn.textContent = "Save New Password";
