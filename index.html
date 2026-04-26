@@ -138,23 +138,24 @@
       submitBtn.textContent = "Updating...";
 
       try {
-        // Attempt 1: Check for hash tokens (standard flow)
-        const hashString = window.location.hash.replace('#', '');
-        const hashParams = new URLSearchParams(hashString);
-        const accessToken = hashParams.get('access_token');
-        
-        // Attempt 2: Check for modern Supabase token_hash format in standard URL params
+        // 🌟 STEP 1: Grab the Master Key (Token Hash) from the new URL format
         const searchParams = new URLSearchParams(window.location.search);
         const tokenHash = searchParams.get('token_hash');
         const type = searchParams.get('type');
 
-        if (accessToken) {
-          await sbClient.auth.setSession({ access_token: accessToken, refresh_token: hashParams.get('refresh_token') });
-        } else if (tokenHash && type === 'recovery') {
-          await sbClient.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+        if (!tokenHash) {
+          throw new Error("Invalid link. Please request a new password reset email from the app.");
         }
 
-        // Now update the password
+        // 🌟 STEP 2: Use the hash to instantly authorize the browser (Bypasses Flutter PKCE!)
+        const { error: otpError } = await sbClient.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: type
+        });
+
+        if (otpError) throw otpError;
+
+        // 🌟 STEP 3: Now that we are authorized, change the password
         const { error: updateError } = await sbClient.auth.updateUser({
           password: p1
         });
