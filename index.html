@@ -27,6 +27,8 @@
     .input-group { 
       margin-bottom: 16px; 
       position: relative; 
+      display: flex;
+      align-items: center;
     }
     
     input { 
@@ -47,36 +49,29 @@
     .main-btn:hover { background-color: #0090C8; transform: translateY(-2px); }
     .main-btn:disabled { background-color: #333333; color: #888888; cursor: not-allowed; }
     
+    /* 🌟 THE FIX: Changed from a <button> to a <div> to prevent mobile browser glitches */
     .toggle-password {
       position: absolute;
-      right: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
+      right: 4px;
+      padding: 12px;
       color: rgba(255, 255, 255, 0.5);
       cursor: pointer;
-      padding: 10px; /* 🌟 Added padding to make the touch target larger for fingers */
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: color 0.3s ease;
-      -webkit-tap-highlight-color: transparent; /* Removes blue flash on mobile tap */
+      -webkit-tap-highlight-color: transparent;
+      z-index: 10;
     }
-    .toggle-password:hover {
-      color: #ffffff;
-    }
+    
+    /* Forces the click to hit the <div>, not the SVG path */
     .toggle-password svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
-      pointer-events: none; /* 🌟 THE FIX: Stops the SVG from blocking the button click */
+      pointer-events: none; 
     }
 
     .message { margin-top: 24px; padding: 12px; border-radius: 8px; font-size: 14px; }
     .message.success { background-color: rgba(46, 213, 115, 0.1); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.3); }
     .message.error { background-color: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -90,20 +85,16 @@
       <div id="reset-form">
         <div class="input-group">
           <input type="password" id="new-password" placeholder="New Password" required minlength="6">
-          <button type="button" class="toggle-password" onclick="toggleVisibility('new-password', 'eye-icon-1')">
-            <svg id="eye-icon-1" viewBox="0 0 24 24">
-              <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
-            </svg>
-          </button>
+          <div class="toggle-password" id="icon-new-password" onclick="toggleVisibility('new-password', 'icon-new-password')">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
+          </div>
         </div>
 
         <div class="input-group">
           <input type="password" id="confirm-password" placeholder="Confirm Password" required minlength="6">
-          <button type="button" class="toggle-password" onclick="toggleVisibility('confirm-password', 'eye-icon-2')">
-            <svg id="eye-icon-2" viewBox="0 0 24 24">
-              <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
-            </svg>
-          </button>
+          <div class="toggle-password" id="icon-confirm-password" onclick="toggleVisibility('confirm-password', 'icon-confirm-password')">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
+          </div>
         </div>
         
         <button id="submit-btn" class="main-btn" onclick="updatePassword()">Save New Password</button>
@@ -124,20 +115,21 @@
     const submitBtn = document.getElementById('submit-btn');
     const statusMessage = document.getElementById('status-message');
 
-    const svgEyeOpen = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
-    const svgEyeClosed = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
+    // These act just like your Flutter Icons.visibility and Icons.visibility_off
+    const iconEyeClosed = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>';
+    const iconEyeOpen = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>';
 
-    // 🌟 THE FIX: Using setAttribute makes it forcefully update the UI on all mobile browsers
-    function toggleVisibility(inputId, iconId) {
+    // 🌟 THE FIX: Mimicking Flutter's setState
+    function toggleVisibility(inputId, iconContainerId) {
       const inputField = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
+      const iconContainer = document.getElementById(iconContainerId);
       
-      if (inputField.getAttribute("type") === "password") {
-        inputField.setAttribute("type", "text");
-        icon.innerHTML = svgEyeOpen; 
+      if (inputField.type === "password") {
+        inputField.type = "text";
+        iconContainer.innerHTML = iconEyeOpen; // Instantly swap the SVG HTML
       } else {
-        inputField.setAttribute("type", "password");
-        icon.innerHTML = svgEyeClosed; 
+        inputField.type = "password";
+        iconContainer.innerHTML = iconEyeClosed; // Instantly swap back
       }
     }
 
@@ -183,7 +175,6 @@
         newPasswordInput.value = '';
         confirmPasswordInput.value = '';
         
-        // Hide the inputs so it looks cleaner after success
         document.getElementById('new-password').parentElement.style.display = 'none';
         document.getElementById('confirm-password').parentElement.style.display = 'none';
         submitBtn.style.display = 'none';
