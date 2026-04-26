@@ -45,7 +45,6 @@
     }
     input:focus { border: 1px solid #00A8E8; }
     
-    /* Premium Text-Based Toggle Button */
     .toggle-btn {
       position: absolute;
       right: 8px;
@@ -64,8 +63,8 @@
     .main-btn:disabled { background-color: #333333; color: #888888; cursor: not-allowed; }
 
     .message { margin-top: 24px; padding: 12px; border-radius: 8px; font-size: 14px; display: none; }
-    .message.success { background-color: rgba(46, 213, 115, 0.1); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.3); display: block; }
-    .message.error { background-color: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); display: block; }
+    .message.success { background-color: rgba(46, 213, 115, 0.1); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.3); }
+    .message.error { background-color: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); }
     
     .version-tag { color: #333333; font-size: 10px; margin-top: 20px; text-align: center; }
   </style>
@@ -94,20 +93,19 @@
 
       <div id="status-box" class="message"></div>
       
-      <div class="version-tag">Version 3.0</div>
+      <div class="version-tag">Version 4.0</div>
     </div>
   </div>
 
   <script>
-    // 1. Initialize Supabase
+    // 🌟 THE FIX: Changed 'supabase' to 'sbClient' so it doesn't crash the file!
     const SUPABASE_URL = 'https://gtuzykimdtholeextfdu.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dXp5a2ltZHRob2xlZXh0ZmR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0ODI5ODIsImV4cCI6MjA5MjA1ODk4Mn0.fIg05zP6I5hIxFFCEJu-ztOhVTHVNnBHhlBJo3AV6Q4';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 2. Strict DOM Event Listeners for SHOW/HIDE
+    // Toggle Logic for Password 1
     const btn1 = document.getElementById('toggle-btn-1');
     const input1 = document.getElementById('pass1');
-    
     btn1.addEventListener('click', function() {
       if (input1.type === 'password') {
         input1.type = 'text';
@@ -118,9 +116,9 @@
       }
     });
 
+    // Toggle Logic for Password 2
     const btn2 = document.getElementById('toggle-btn-2');
     const input2 = document.getElementById('pass2');
-    
     btn2.addEventListener('click', function() {
       if (input2.type === 'password') {
         input2.type = 'text';
@@ -131,18 +129,19 @@
       }
     });
 
-    // 3. UI Messaging
+    // Feedback Logic
     const statusBox = document.getElementById('status-box');
     const submitBtn = document.getElementById('submit-btn');
 
     function showFeedback(message, isError) {
       statusBox.textContent = message;
       statusBox.className = isError ? 'message error' : 'message success';
+      statusBox.style.display = 'block';
     }
 
-    // 4. Form Submission Logic
+    // Form Submission
     document.getElementById('password-form').addEventListener('submit', async function(event) {
-      event.preventDefault(); // Stop page from refreshing!
+      event.preventDefault(); // This WILL work now because the script isn't crashed!
 
       const p1 = input1.value;
       const p2 = input2.value;
@@ -156,7 +155,7 @@
       submitBtn.textContent = "Updating...";
 
       try {
-        const { data, error } = await supabase.auth.updateUser({
+        const { data, error } = await sbClient.auth.updateUser({
           password: p1
         });
 
@@ -166,8 +165,8 @@
         document.getElementById('password-form').style.display = 'none';
 
       } catch (error) {
-        console.error(error); 
-        showFeedback(error.message || "Session expired. Please request a new link from the app.", true);
+        console.error("Supabase Error:", error); 
+        showFeedback(error.message || "An error occurred. Request a new link.", true);
         submitBtn.disabled = false;
         submitBtn.textContent = "Save New Password";
       }
