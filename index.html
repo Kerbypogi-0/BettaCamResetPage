@@ -93,43 +93,30 @@
 
       <div id="status-box" class="message"></div>
       
-      <div class="version-tag">Version 4.0</div>
+      <div class="version-tag">Version 5.0 (Force Inject)</div>
     </div>
   </div>
 
   <script>
-    // 🌟 THE FIX: Changed 'supabase' to 'sbClient' so it doesn't crash the file!
     const SUPABASE_URL = 'https://gtuzykimdtholeextfdu.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dXp5a2ltZHRob2xlZXh0ZmR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0ODI5ODIsImV4cCI6MjA5MjA1ODk4Mn0.fIg05zP6I5hIxFFCEJu-ztOhVTHVNnBHhlBJo3AV6Q4';
     const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Toggle Logic for Password 1
+    // Toggle Logic
     const btn1 = document.getElementById('toggle-btn-1');
     const input1 = document.getElementById('pass1');
     btn1.addEventListener('click', function() {
-      if (input1.type === 'password') {
-        input1.type = 'text';
-        btn1.textContent = 'HIDE';
-      } else {
-        input1.type = 'password';
-        btn1.textContent = 'SHOW';
-      }
+      input1.type = input1.type === 'password' ? 'text' : 'password';
+      btn1.textContent = input1.type === 'password' ? 'SHOW' : 'HIDE';
     });
 
-    // Toggle Logic for Password 2
     const btn2 = document.getElementById('toggle-btn-2');
     const input2 = document.getElementById('pass2');
     btn2.addEventListener('click', function() {
-      if (input2.type === 'password') {
-        input2.type = 'text';
-        btn2.textContent = 'HIDE';
-      } else {
-        input2.type = 'password';
-        btn2.textContent = 'SHOW';
-      }
+      input2.type = input2.type === 'password' ? 'text' : 'password';
+      btn2.textContent = input2.type === 'password' ? 'SHOW' : 'HIDE';
     });
 
-    // Feedback Logic
     const statusBox = document.getElementById('status-box');
     const submitBtn = document.getElementById('submit-btn');
 
@@ -139,9 +126,17 @@
       statusBox.style.display = 'block';
     }
 
-    // Form Submission
+    // Security Check on Load
+    window.onload = function() {
+      if (!window.location.hash.includes("access_token")) {
+        showFeedback("Security token missing from URL. Please request a new link.", true);
+        submitBtn.disabled = true;
+      }
+    };
+
+    // Form Submission Logic
     document.getElementById('password-form').addEventListener('submit', async function(event) {
-      event.preventDefault(); // This WILL work now because the script isn't crashed!
+      event.preventDefault(); 
 
       const p1 = input1.value;
       const p2 = input2.value;
@@ -155,18 +150,37 @@
       submitBtn.textContent = "Updating...";
 
       try {
-        const { data, error } = await sbClient.auth.updateUser({
+        // 🌟 THE FIX: Manually rip the token out of the URL
+        const hashString = window.location.hash.replace('#', '');
+        const urlParams = new URLSearchParams(hashString);
+        const accessToken = urlParams.get('access_token');
+        const refreshToken = urlParams.get('refresh_token');
+
+        if (!accessToken) {
+          throw new Error("Could not extract token. Ensure you clicked a fresh email link.");
+        }
+
+        // 🌟 FORCE INJECT: Tell Supabase exactly who this is before updating
+        const { error: sessionError } = await sbClient.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+
+        if (sessionError) throw sessionError;
+
+        // Now that the session is forced, update the password!
+        const { error: updateError } = await sbClient.auth.updateUser({
           password: p1
         });
 
-        if (error) throw error;
+        if (updateError) throw updateError;
 
         showFeedback("Success! Password updated. You can now log into the app.", false);
         document.getElementById('password-form').style.display = 'none';
 
       } catch (error) {
         console.error("Supabase Error:", error); 
-        showFeedback(error.message || "An error occurred. Request a new link.", true);
+        showFeedback(error.message || "Session error. Please request a new link.", true);
         submitBtn.disabled = false;
         submitBtn.textContent = "Save New Password";
       }
